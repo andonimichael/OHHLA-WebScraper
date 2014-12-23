@@ -11,7 +11,7 @@ def removeHeader(lyrics):
 	subAlbum = re.sub(r'^Album:.*?\n', '', subArtists, flags = re.MULTILINE);
 	subSong = re.sub(r'^Song:.*?\n', '', subAlbum, flags = re.MULTILINE);
 	subTypers = re.sub(r'^Typed by:.*?\n', '', subSong, flags = re.MULTILINE);
-	subTypers2 = re.sub(r'^Typed By:.*?\n', '', subSong, flags = re.MULTILINE);
+	subTypers2 = re.sub(r'^Typed By:.*?\n', '', subTypers, flags = re.MULTILINE);
 	return subTypers2;
 
 def removePreLyrics(lyrics):
@@ -24,10 +24,12 @@ def removeChorus(lyrics):
 	subChorus = re.sub(r'\[Chorus\].*?\[', '[', sub10sionnotsinging, flags = re.DOTALL);
 	subChorus2 = re.sub(r'Chorus:.*?\[', '[', subChorus, flags = re.DOTALL);
 	subChorus3 = re.sub(r'Chorus:.*?(\n{2,})', '', subChorus2, flags = re.DOTALL);
-	return subChorus3;
+	subChorus4 = re.sub(r'\[Chorus.*?\].*?\[', '[', subChorus3, flags = re.DOTALL);
+	return subChorus4;
 
 def removeTags(lyrics):
-	subTags = re.sub(r'\[.*?\]', '', lyrics);
+	subNfamous = re.sub(r'\[Nfamous\]\nClap your hands.*?$', '', lyrics, flags = re.DOTALL);  #Special Case for 1200Tech lyrics
+	subTags = re.sub(r'\[.*?\]', '', subNfamous);
 	subComments = re.sub(r'-=.*?=-', '', subTags);
 	subTimesNum = re.sub(r'x\d+', '', subComments);
 	subTimesNum2 = re.sub(r'x \d+', '', subTimesNum);
