@@ -1,3 +1,5 @@
+# OHHLA Scrapper. Written by Andoni M. Garcia. 2014
+
 import urllib.request
 import re
 from lxml import html, etree
@@ -8,16 +10,24 @@ sites = ["http://ohhla.com/all.html", "http://ohhla.com/all_two.html", "http://o
 def removeHeader(lyrics):
 	#Old RegEx was: r'^Artists:[\w\s.,-:/\\@\'\(\)&\*]*\n'
 	subArtists = re.sub(r'^Artist:.*?\n', '', lyrics, flags = re.MULTILINE);
-	subAlbum = re.sub(r'^Album:.*?\n', '', subArtists, flags = re.MULTILINE);
-	subSong = re.sub(r'^Song:.*?\n', '', subAlbum, flags = re.MULTILINE);
-	subTypers = re.sub(r'^Typed by:.*?\n', '', subSong, flags = re.MULTILINE);
+	subArtists2 = re.sub(r'^artist:.*?\n', '', subArtists, flags = re.MULTILINE);
+	subAlbum = re.sub(r'^Album:.*?\n', '', subArtists2, flags = re.MULTILINE);
+	subAlbum2 = re.sub(r'^album:.*?\n', '', subAlbum, flags = re.MULTILINE);
+	subSong = re.sub(r'^Song:.*?\n', '', subAlbum2, flags = re.MULTILINE);
+	subSong2 = re.sub(r'^song:.*?\n', '', subSong, flags = re.MULTILINE);
+	subTypers = re.sub(r'^Typed by:.*?\n', '', subSong2, flags = re.MULTILINE);
 	subTypers2 = re.sub(r'^Typed By:.*?\n', '', subTypers, flags = re.MULTILINE);
-	return subTypers2;
+	subTypers3 = re.sub(r'^typed by:.*?\n', '', subTypers2, flags = re.MULTILINE);
+	subIntro = re.sub(r'^Intro:.*?\n', '', subTypers3, flags = re.MULTILINE);
+	subIntro2 = re.sub(r'^intro:.*?\n', '', subIntro, flags = re.MULTILINE);
+	return subIntro2;
 
 def removePreLyrics(lyrics):
 	subDJ = re.sub(r'\[DJ.*?\].*?\[', '[', lyrics, flags = re.DOTALL);
 	subTalking = re.sub(r'-=talking=-.*?\[', '[', subDJ, flags = re.DOTALL);
-	return subTalking;
+	subProlouge = re.sub(r'\[Prolouge.*?\].*?\[', '[', subTalking, flags = re.DOTALL);
+	subIntros = re.sub(r'\[Intro.*?\].*?\[', '[', subProlouge, flags = re.DOTALL);
+	return subIntros;
 
 def removeChorus(lyrics):
 	sub10sionnotsinging = re.sub(r'\[10sion not singing\]', '', lyrics);  #Special Case for 10sion lyrics
@@ -25,20 +35,39 @@ def removeChorus(lyrics):
 	subChorus2 = re.sub(r'Chorus:.*?\[', '[', subChorus, flags = re.DOTALL);
 	subChorus3 = re.sub(r'Chorus:.*?(\n{2,})', '', subChorus2, flags = re.DOTALL);
 	subChorus4 = re.sub(r'\[Chorus.*?\].*?\[', '[', subChorus3, flags = re.DOTALL);
-	return subChorus4;
+	subChorus5 = re.sub(r'\[Chorus\] - .*?$', '', subChorus4);
+	return subChorus5;
 
-def removeTags(lyrics):
+def removeRest(lyrics):
 	subNfamous = re.sub(r'\[Nfamous\]\nClap your hands.*?$', '', lyrics, flags = re.DOTALL);  #Special Case for 1200Tech lyrics
-	subTags = re.sub(r'\[.*?\]', '', subNfamous);
-	subComments = re.sub(r'-=.*?=-', '', subTags);
-	subTimesNum = re.sub(r'x\d+', '', subComments);
-	subTimesNum2 = re.sub(r'x \d+', '', subTimesNum);
-	subScratching = re.sub(r'\*scratching\*.*?\".*?\"', '', subTimesNum2, flags = re.DOTALL);
-	subAstericks = re.sub(r'\*.*?\n', '', subScratching);
-	subChoruses = re.sub(r'Chorus\n', '', subAstericks);
+	subInterlude = re.sub(r'\[Interlude.*?\].*?\[', '[', subNfamous, flags = re.DOTALL);
+	subHook = re.sub(r'\[Hook.*?\].*?\[', '[', subInterlude, flags = re.DOTALL);
+	subHookout = re.sub(r'\[Hook.*?\].*?$', '', subHook, flags = re.DOTALL);  # IM NERVOUS THAT THIS WILL CLEAR A WHOLE TEXT ACCIDENTALLY
+	subScratchesout = re.sub(r'\[scratches.*?\].*?$', '', subHookout, flags = re.DOTALL);  #I think Special Case for 1982 lyrics
+	subOutro = re.sub(r'\[Outro.*?\].*?$', '', subScratchesout, flags = re.DOTALL);
+	subTags = re.sub(r'\[.*?\]', '', subOutro);
+	subParenths = re.sub(r'\(.*?\)', '', subTags);
+	subPartialParens = re.sub(r'\(.*?\n', '', subParenths);
+	subPartialParens2 = re.sub(r'^.*?\)\n', '', subPartialParens, flags = re.MULTILINE);
+	subCurlys = re.sub(r'\{.*?\}', '', subPartialParens2);
+	subQuotes = re.sub(r'\".*?\" - .*?\n', '', subCurlys);
+	subQuotes2 = re.sub(r'\".*?\" - .*?$', '', subQuotes);
+	subQuotes3 = re.sub(r'\".*?\"\n', '', subQuotes2);
+	subQuotes4 = re.sub(r'\".*?\"$', '', subQuotes3);
+	subPartialQuotes = re.sub(r'\".+?\n', '', subQuotes4);
+	subPartialQuotes2 = re.sub(r'^.+?\"\n', '', subPartialQuotes, flags = re.MULTILINE);
+	subComments = re.sub(r'-=.*?=-', '', subPartialQuotes2);
+	subScratching = re.sub(r'\*scratching\*.*?\n', '', subComments);
+	subScratching2 = re.sub(r'\*scratching\*.*?$', '', subScratching);
+	subAstericks = re.sub(r'\*.*?\*', '', subScratching2);
+	subAstericks2 = re.sub(r'\*.*?\n', '', subAstericks);
+	subChoruses = re.sub(r'^Chorus\n', '', subAstericks2, flags = re.MULTILINE);
 	subChoruses2 = re.sub(r'\nChorus$', '', subChoruses);
-	subParenths = re.sub(r'\(.*?\)', '', subChoruses2);
-	return subParenths;
+	subChoruses3 = re.sub(r'\nChorus.*?\n', '', subChoruses2);
+	subTimesNum = re.sub(r'x\d+', '', subChoruses3);
+	subTimesNum2 = re.sub(r'x \d+', '', subTimesNum);
+	subVerse = re.sub(r'Verse.*?:.*?\n', '', subTimesNum2);
+	return subVerse;
 
 def cleanNewlines(lyrics):
 	subNewline = re.sub(r'\n{2,}', '\n', lyrics);
@@ -48,7 +77,7 @@ def cleanLyrics(lyrics):
 	step1 = removeHeader(lyrics);
 	step2 = removePreLyrics(step1);
 	step3 = removeChorus(step2);
-	step4 = removeTags(step3);
+	step4 = removeRest(step3);
 	step5 = cleanNewlines(step4);
 	return step5;
 
