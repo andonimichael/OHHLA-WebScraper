@@ -5,10 +5,57 @@ from lxml import html, etree
 ohhla = "http://ohhla.com/";
 sites = ["http://ohhla.com/all.html", "http://ohhla.com/all_two.html", "http://ohhla.com/all_three.html", "http://ohhla.com/all_four.html", "http://ohhla.com/all_five.html"]; 
 
+def removeHeader(lyrics):
+	#Old RegEx was: r'^Artists:[\w\s.,-:/\\@\'\(\)&\*]*\n'
+	subArtists = re.sub(r'^Artist:.*?\n', '', lyrics, flags = re.MULTILINE);
+	subAlbum = re.sub(r'^Album:.*?\n', '', subArtists, flags = re.MULTILINE);
+	subSong = re.sub(r'^Song:.*?\n', '', subAlbum, flags = re.MULTILINE);
+	subTypers = re.sub(r'^Typed by:.*?\n', '', subSong, flags = re.MULTILINE);
+	subTypers2 = re.sub(r'^Typed By:.*?\n', '', subSong, flags = re.MULTILINE);
+	return subTypers2;
+
+def removePreLyrics(lyrics):
+	subDJ = re.sub(r'\[DJ.*?\].*?\[', '[', lyrics, flags = re.DOTALL);
+	subTalking = re.sub(r'-=talking=-.*?\[', '[', subDJ, flags = re.DOTALL);
+	return subTalking;
+
+def removeChorus(lyrics):
+	sub10sionnotsinging = re.sub(r'\[10sion not singing\]', '', lyrics);  #Special Case for 10sion lyrics
+	subChorus = re.sub(r'\[Chorus\].*?\[', '[', sub10sionnotsinging, flags = re.DOTALL);
+	subChorus2 = re.sub(r'Chorus:.*?\[', '[', subChorus, flags = re.DOTALL);
+	subChorus3 = re.sub(r'Chorus:.*?(\n{2,})', '', subChorus2, flags = re.DOTALL);
+	return subChorus3;
+
+def removeTags(lyrics):
+	subTags = re.sub(r'\[.*?\]', '', lyrics);
+	subComments = re.sub(r'-=.*?=-', '', subTags);
+	subTimesNum = re.sub(r'x\d+', '', subComments);
+	subTimesNum2 = re.sub(r'x \d+', '', subTimesNum);
+	subScratching = re.sub(r'\*scratching\*.*?\".*?\"', '', subTimesNum2, flags = re.DOTALL);
+	subAstericks = re.sub(r'\*.*?\n', '', subScratching);
+	subChoruses = re.sub(r'Chorus\n', '', subAstericks);
+	subChoruses2 = re.sub(r'\nChorus$', '', subChoruses);
+	subParenths = re.sub(r'\(.*?\)', '', subChoruses2);
+	return subParenths;
+
+def cleanNewlines(lyrics):
+	subNewline = re.sub(r'\n{2,}', '\n', lyrics);
+	return subNewline;
+
+def cleanLyrics(lyrics):
+	step1 = removeHeader(lyrics);
+	step2 = removePreLyrics(step1);
+	step3 = removeChorus(step2);
+	step4 = removeTags(step3);
+	step5 = cleanNewlines(step4);
+	return step5;
+
 def handleFrontPage(fpage, base, myFile):
 	artists = fpage.xpath("//pre/a[@href]/@href");
 	for href in artists:
 		if href == '':
+			continue
+		elif href == 'anonymous/113/':	#A French Artist
 			continue
 		url = base + href;
 		try:
@@ -54,17 +101,8 @@ def handleSongPage(spage, myFile):
 		lyrics = spage.xpath("//div/pre/text()")[0];
 	except:
 		return;
-	subArtists = re.sub(r'^Artist:[\w\s.,-:/\\@\'\(\)]*', '', lyrics, flags = re.MULTILINE);
-	subAlbum = re.sub(r'^Album:[\w\s.,-:/\\@\'\(\)]*', '', subArtists, flags = re.MULTILINE);
-	subSong = re.sub(r'^Song:[\w\s.,-:/\\@\'\(\)]*', '', subAlbum, flags = re.MULTILINE);
-	subTyper = re.sub(r'^Typed by:[\w\s.,-:/\\@\'\(\)]*', '', subSong, flags = re.MULTILINE);
-	subTags = re.sub(r'\[.*?\]','',subTyper);
-	subComments = re.sub(r'\(.*?\)','',subTags);
-	subNotes = re.sub(r'-=.*?=-','',subComments);
-	subStars = re.sub(r'\*.*?\*','',subNotes);
-	subDblStars = re.sub(r'\*\*[\w\s.-:/\\@\'\(\)]*','',subStars, flags = re.MULTILINE);
-	subCleanup = re.sub(r'\n{2,}','\n',subDblStars);
-	myFile.write(subCleanup);
+	cleanup = cleanLyrics(lyrics);
+	myFile.write(cleanup);
 
 def scrapeOHHLA():
 	myFile = open("lyrics.txt","w");
