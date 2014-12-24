@@ -8,7 +8,6 @@ ohhla = "http://ohhla.com/";
 sites = ["http://ohhla.com/all.html", "http://ohhla.com/all_two.html", "http://ohhla.com/all_three.html", "http://ohhla.com/all_four.html", "http://ohhla.com/all_five.html"]; 
 
 def removeHeader(lyrics):
-	#Old RegEx was: r'^Artists:[\w\s.,-:/\\@\'\(\)&\*]*\n'
 	subHeader = re.sub(r'^([aA]rtist:|[aA]lbum:|[sS]ong:|[tT]yped [bB]y:|[iI]ntro:).*?\n', '', lyrics, flags = re.MULTILINE);
 	return subHeader;
 
@@ -25,15 +24,15 @@ def removeChorus(lyrics):
 
 def removeRest(lyrics):
 	subNfamous = re.sub(r'\[Nfamous\]\nClap your hands.*?$', '', lyrics, flags = re.DOTALL);  #Special Case for 1200Tech lyrics
-	
 	subNonLyricTags = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?(\n{2,}|$)', '', subNfamous, flags = re.DOTALL);
 	subNonLyricTags2 = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?\[', '[', subNonLyricTags, flags = re.DOTALL);  #Catches poorly formatted pages
 	subChorusVerse = re.sub(r'(^Chorus|[vV]erse.*?:).*?(\n|$)', '', subNonLyricTags2, flags = re.MULTILINE);
 	subTags = re.sub(r'(\[.*?\]|\(.*?\)|\{.*?\}|-=.*?=-)', '', subChorusVerse);
 	subQuotes = re.sub(r'(\".*?\"( - .*?)?|(\*scratching\*.*?))(\n|$)', '', subTags);
-	subAstericks = re.sub(r'\*.*?(\*|\n)', '', subQuotes); #Seperated to not compete with the *scratching* filter
-	subPartialParens = re.sub(r'([^\(]*?\)|\([^\)]*?)(\n|$)', '', subAstericks);
-	subRepeats = re.sub(r'(x|x )\d+', '', subPartialParens);
+	subAstericks = re.sub(r'\*.*?(\*|\n)', '', subQuotes); #Seperate expression to not compete with the *scratching* filter
+	subPartialParens = re.sub(r'([^\(\n]*?\)|\([^\)\n]*?)(\n|$)', '', subAstericks);
+	subPartialQuotes = re.sub(r'(\"[^\"\n]+?|^[^\"\n]+?\")(\n|$)', '\n', subPartialParens, flags = re.MULTILINE);  #Subing \n is to preserve the prior line (What caused the earlier bug)
+	subRepeats = re.sub(r'(x|x )\d+', '', subPartialQuotes);
 	return subRepeats;
 
 def cleanNewlines(lyrics):
