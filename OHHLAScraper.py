@@ -26,9 +26,9 @@ def removeRest(lyrics):
 	subNfamous = re.sub(r'\[Nfamous\]\nClap your hands.*?$', '', lyrics, flags = re.DOTALL);  #Special Case for 1200Tech lyrics
 	subNonLyricTags = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?(\n{2,}|$)', '', subNfamous, flags = re.DOTALL);
 	subNonLyricTags2 = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?\[', '[', subNonLyricTags, flags = re.DOTALL);  #Catches poorly formatted pages
-	subChorusVerse = re.sub(r'(^Chorus|[vV]erse.*?:).*?(\n|$)', '', subNonLyricTags2, flags = re.MULTILINE);
-	subTags = re.sub(r'(\[.*?\]|\(.*?\)|\{.*?\}|-=.*?=-)', '', subChorusVerse);
-	subQuotes = re.sub(r'(\".*?\"( - .*?)?|(\*scratching\*.*?))(\n|$)', '', subTags);
+	subTags = re.sub(r'(\[.*?\]|\(.*?\)|\{.*?\}|-=.*?=-)', '', subNonLyricTags2);
+	subChorusVerse = re.sub(r'(^Chorus|[vV]erse.*?:).*?(\n|$)', '', subTags, flags = re.MULTILINE);
+	subQuotes = re.sub(r'(\".*?\"( -.*?)*?|(\*scratching\*.*?))(\n|$)', '', subChorusVerse);
 	subAstericks = re.sub(r'\*.*?(\*|\n)', '', subQuotes); #Seperate expression to not compete with the *scratching* filter
 	subPartialParens = re.sub(r'([^\(\n]*?\)|\([^\)\n]*?)(\n|$)', '', subAstericks);
 	subPartialQuotes = re.sub(r'(\"[^\"\n]+?|^[^\"\n]+?\")(\n|$)', '\n', subPartialParens, flags = re.MULTILINE);  #Subing \n is to preserve the prior line (What caused the earlier bug)
