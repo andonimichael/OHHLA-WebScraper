@@ -28,15 +28,21 @@ def removeRest(lyrics):
 	subNonLyricTags2 = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?\[', '[', subNonLyricTags, flags = re.DOTALL);  #Catches poorly formatted pages
 	subTags = re.sub(r'(\[.*?\]|\(.*?\)|\{.*?\}|-=.*?=-)', '', subNonLyricTags2);
 	subChorusVerse = re.sub(r'(^Chorus|[vV]erse.*?:).*?(\n|$)', '', subTags, flags = re.MULTILINE);
-	subQuotes = re.sub(r'(\".*?\"( -.*?)*?|(\*scratching\*.*?))(\n|$)', '', subChorusVerse);
+	subQuotes = re.sub(r'(^\".*?\"( -.*?)*?|(\*scratching\*.*?))(\n|$)', '\n', subChorusVerse, flags = re.MULTILINE);  #Subing \n is to preserve the prior line (What caused the earlier bug)
 	subAstericks = re.sub(r'\*.*?(\*|\n)', '', subQuotes); #Seperate expression to not compete with the *scratching* filter
 	subPartialParens = re.sub(r'([^\(\n]*?\)|\([^\)\n]*?)(\n|$)', '', subAstericks);
 	subPartialQuotes = re.sub(r'(\"[^\"\n]+?|^[^\"\n]+?\")(\n|$)', '\n', subPartialParens, flags = re.MULTILINE);  #Subing \n is to preserve the prior line (What caused the earlier bug)
 	subRepeats = re.sub(r'(x|x )\d+', '', subPartialQuotes);
 	return subRepeats;
 
-def cleanNewlines(lyrics):
-	subNewline = re.sub(r'\n{2,}', '\n', lyrics);
+def cleanCharacters(lyrics):
+	subWeirdChar = re.sub(r'[~(.{2,})]', '', lyrics);
+	return subWeirdChar;
+
+def removeWhitespace(lyrics):
+	subSpaces = re.sub(r'^( )+?\b', '', lyrics, flags = re.MULTILINE);
+	subEndSpaces = re.sub(r'( )+?\n', '\n', subSpaces);
+	subNewline = re.sub(r'\n{2,}', '\n', subEndSpaces);
 	return subNewline;
 
 def cleanLyrics(lyrics):
@@ -44,8 +50,9 @@ def cleanLyrics(lyrics):
 	step2 = removePreLyrics(step1);
 	step3 = removeChorus(step2);
 	step4 = removeRest(step3);
-	step5 = cleanNewlines(step4);
-	return step5;
+	step5 = cleanCharacters(step4);
+	step6 = removeWhitespace(step5);
+	return step6;
 
 def handleFrontPage(fpage, base, myFile):
 	artists = fpage.xpath("//pre/a[@href]/@href");
