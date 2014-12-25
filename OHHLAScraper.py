@@ -99,12 +99,19 @@ def handleAlbumPage(alpage, base, stop, myFile):
 			SpageOpen = urllib.request.urlopen(url);
 		except:
 			continue;
-		SpageDom = html.fromstring(SpageOpen.read());
-		handleSongPage(SpageDom, myFile);
+		SpageDom = SpageOpen.read();
+		TestAgainst = str(SpageDom);
+		if re.match(r'^b[\'\"]<!DOCTYPE.*?>', TestAgainst) is not None:
+			SpageHTML = html.fromstring(SpageDom);
+			handleSongPage(SpageHTML, myFile);
+		else:
+			SpageDomUTF = SpageDom.decode("utf-8", "ignore");
+			SpageClean = cleanLyrics(SpageDomUTF);
+			myFile.write(SpageClean);
 
 def handleSongPage(spage, myFile):
 	try:
-		lyrics = spage.xpath("//div/pre/text()")[0];
+		lyrics = spage.xpath("//pre/text()")[0];
 	except:
 		return;
 	cleanup = cleanLyrics(lyrics);
