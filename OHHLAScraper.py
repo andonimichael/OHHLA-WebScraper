@@ -18,8 +18,8 @@ def removePreLyrics(lyrics):
 
 def removeChorus(lyrics):
 	sub10sionnotsinging = re.sub(r'\[10sion not singing\]', '', lyrics);  #Special Case for 10sion lyrics
-	subChorus = re.sub(r'(\[Chorus.*?\]|Chorus:).*?(\n{2,}|$)', '', sub10sionnotsinging, flags = re.DOTALL);
-	subChorus2 = re.sub(r'(\[Chorus.*?\]|Chorus:).*?\[', '[', subChorus, flags = re.DOTALL);  #Catches poorly formatted pages
+	subChorus = re.sub(r'(\[Chorus.*?\]|Chorus:|Chorus\(.*?\):).*?(\n{2,}|$)', '', sub10sionnotsinging, flags = re.DOTALL);
+	subChorus2 = re.sub(r'(\[Chorus.*?\]|Chorus:|Chorus\(.*?\):).*?\[', '[', subChorus, flags = re.DOTALL);  #Catches poorly formatted pages
 	return subChorus2;
 
 def removeRest(lyrics):
@@ -28,21 +28,23 @@ def removeRest(lyrics):
 	subNonLyricTags2 = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?\[', '[', subNonLyricTags, flags = re.DOTALL);  #Catches poorly formatted pages
 	subTags = re.sub(r'(\[.*?\]|\(.*?\)|\{.*?\}|-=.*?=-)', '', subNonLyricTags2);
 	subChorusVerse = re.sub(r'(^Chorus|[vV]erse.*?:).*?(\n|$)', '', subTags, flags = re.MULTILINE);
-	subQuotes = re.sub(r'(^\".*?\"( -.*?)*?|(\*scratching\*.*?))(\n|$)', '\n', subChorusVerse, flags = re.MULTILINE);  #Subing \n is to preserve the prior line (What caused the earlier bug)
+	subQuotes = re.sub(r'(^\".*?\"( -.*?)*?|(\*scratching\*.*?))(\n|$)', '\n', subChorusVerse, flags = re.MULTILINE); #Subing \n is to preserve the prior line
 	subAstericks = re.sub(r'\*.*?(\*|\n)', '', subQuotes); #Seperate expression to not compete with the *scratching* filter
 	subPartialParens = re.sub(r'([^\(\n]*?\)|\([^\)\n]*?)(\n|$)', '', subAstericks);
-	subPartialQuotes = re.sub(r'(\"[^\"\n]+?|^[^\"\n]+?\")(\n|$)', '\n', subPartialParens, flags = re.MULTILINE);  #Subing \n is to preserve the prior line (What caused the earlier bug)
+	subPartialQuotes = re.sub(r'(\"[^\"\n]+?|^[^\"\n]+?\")(\n|$)', '\n', subPartialParens, flags = re.MULTILINE);  #Subing \n is to preserve the prior line
 	subRepeats = re.sub(r'(x|x )\d+', '', subPartialQuotes);
 	return subRepeats;
 
 def cleanCharacters(lyrics):
-	subWeirdChar = re.sub(r'[~(.{2,})]', '', lyrics);
-	return subWeirdChar;
+	subWeirdChar = re.sub(r'(~|\.{2,}|\+)', '', lyrics);  #Leave in -{2,} because of blurred out curse words
+	subEndComma = re.sub(r'\b,( )*?\n', '\n', subWeirdChar);
+	return subEndComma;
 
 def removeWhitespace(lyrics):
 	subSpaces = re.sub(r'^( )+?\b', '', lyrics, flags = re.MULTILINE);
 	subEndSpaces = re.sub(r'( )+?\n', '\n', subSpaces);
-	subNewline = re.sub(r'\n{2,}', '\n', subEndSpaces);
+	subMidSpaces = re.sub(r'( ){2,}', ' ', subEndSpaces);
+	subNewline = re.sub(r'\n{2,}', '\n', subMidSpaces);
 	return subNewline;
 
 def cleanLyrics(lyrics):
