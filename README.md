@@ -31,5 +31,6 @@ Currently, there are two known bugs:
 
 1. For some reason *smart* or *curly* quotes get dropped with lxml's html fromstring function. Instead of being converted into *straight* or *dumb* quotes, they are dropped completely. This makes stray phrases in pages such as [this](http://ohhla.com/anonymous/1st_infa/rm_bside/fourthof.1st.txt) escape my quote-sanitization. It's a slightly annoying bug that is slightly out of my current focus with this project. We'll see if I resolve it or if it is trivial enough that I let those few lines slide.
 2. During my aforementioned hack to read from all the pages on the OHHLA, I was forced to include the `"ignore"` flag with the utf-8 decoding. This is because [some](http://ohhla.com/anonymous/2_chainz/BOATS_2/feds_wat.2cz.txt) pages have unique characters (like the French ç), which cause the decoder to throw an error. I will look into other encodings, but for now UTF-8 requires me to lose some letters occasionally (because of the included ignore flag).
+3. Partial quotes still are not perfectly situated. If there is an odd number of quotes (i.e. a partial quote that did not have an end-quote), my expression will not be able to evaluate it.
 
 If you have any questions or strong feelings towards excluding (or including) sanitizations of the lyrics, feel free to email me at [andoni@uchicago.edu](mailto:andoni@uchicago.edu).
