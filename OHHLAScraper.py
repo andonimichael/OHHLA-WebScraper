@@ -12,40 +12,46 @@ def removeHeader(lyrics):
 	return subHeader;
 
 def removePreLyrics(lyrics):
-	subPreLyrics = re.sub(r'(\[(DJ|Prolouge|Intro).*?\]|-=talking=-).*?(\n{2,})', '', lyrics);
+	subPreLyrics = re.sub(r'(\[(DJ|Prolouge|Intro|Mr\. Mixx).*?\]|-=talking=-).*?(\n{2,})', '', lyrics, flags = re.DOTALL);  #Mr. Mixx for 2-Live Crew lyrics
 	subPreLyrics2 = re.sub(r'(\[(DJ|Prolouge|Intro).*?\]|-=talking=-).*?\[', '[', subPreLyrics, flags = re.DOTALL);  #Catches poorly formatted pages
 	return subPreLyrics2;
 
 def removeChorus(lyrics):
 	sub10sionnotsinging = re.sub(r'\[10sion not singing\]', '', lyrics);  #Special Case for 10sion lyrics
 	subChorus = re.sub(r'(\[Chorus.*?\]|Chorus:|Chorus\(.*?\):).*?(\n{2,}|$)', '', sub10sionnotsinging, flags = re.DOTALL);
-	subChorus2 = re.sub(r'(\[Chorus.*?\]|Chorus:|Chorus\(.*?\):).*?\[', '[', subChorus, flags = re.DOTALL);  #Catches poorly formatted pages
-	return subChorus2;
+	subChorus = re.sub(r'(\[Chorus.*?\]|Chorus:|Chorus\(.*?\):).*?\[', '[', subChorus, flags = re.DOTALL);  #Catches poorly formatted pages(CHECK IF ALL ARE NEEDED)
+	return subChorus;
 
 def removeRest(lyrics):
 	subNfamous = re.sub(r'\[Nfamous\]\nClap your hands.*?$', '', lyrics, flags = re.DOTALL);  #Special Case for 1200Tech lyrics
-	subNonLyricTags = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?(\n{2,}|$)', '', subNfamous, flags = re.DOTALL);
+	subJLegend = re.sub(r'\[John Legend\]\nI lay awake.*?$', '', subNfamous, flags = re.DOTALL);  #Special Case for 2-Chainz Lyrics
+	subNonLyricTags = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?(\n{2,}|$)', '', subJLegend, flags = re.DOTALL);
 	subNonLyricTags2 = re.sub(r'(\[(Interlude|Hook|[sS]cratches|Outro).*?\]|(Interlude:|Hook:|[sS]cratches:|Outro:)).*?\[', '[', subNonLyricTags, flags = re.DOTALL);  #Catches poorly formatted pages
 	subTags = re.sub(r'(\[.*?\]|\(.*?\)|\{.*?\}|-=.*?=-)', '', subNonLyricTags2);
-	subChorusVerse = re.sub(r'(^Chorus|[vV]erse.*?:).*?(\n|$)', '', subTags, flags = re.MULTILINE);
-	subQuotes = re.sub(r'(^\".*?\"( -.*?)*?|(\*scratching\*.*?))(\n|$)', '\n', subChorusVerse, flags = re.MULTILINE); #Subing \n is to preserve the prior line
+	subChorusVerse = re.sub(r'(^Chorus|[vV]erse.*?:|[vV]erse \d+?).*?(\n|$)', '', subTags, flags = re.MULTILINE);
+	subQuotes = re.sub(r'((^( |\t)*?\".*?\".*?)|(\*scratching\*.*?))(\n|$)', '\n', subChorusVerse, flags = re.MULTILINE); #Subing \n is to preserve the prior line
 	subAstericks = re.sub(r'\*.*?(\*|\n)', '', subQuotes); #Seperate expression to not compete with the *scratching* filter
 	subPartialParens = re.sub(r'([^\(\n]*?\)|\([^\)\n]*?)(\n|$)', '', subAstericks);
-	subPartialQuotes = re.sub(r'(\"[^\"\n]+?|^[^\"\n]+?\")(\n|$)', '\n', subPartialParens, flags = re.MULTILINE);  #Subing \n is to preserve the prior line
+	subPartialQuotes = re.sub(r'^((?:[^\"\n]*\"[^\"\n]*\")*[^\"\n]*)\"[^\"\n]*\n[^\"\n]*\"(\n|$)', '\g<1>\n', subPartialParens, flags = re.MULTILINE);  #From StackOverflow
 	subRepeats = re.sub(r'(x|x )\d+', '', subPartialQuotes);
 	return subRepeats;
 
 def cleanCharacters(lyrics):
-	subWeirdChar = re.sub(r'(~|\.{2,}|\+)', '', lyrics);  #Leave in -{2,} because of blurred out curse words
-	subEndComma = re.sub(r'\b,( )*?\n', '\n', subWeirdChar);
+	subWeirdChar = re.sub(r'(~|\.{2,}|\+|\>|\<)', '', lyrics);  #Leave in -{2,} because of blurred out curse words
+	subEndings = re.sub(r'(!|\?){2,}', '\g<1>', subWeirdChar);  #Need to check ??? and !?!? cases
+	subEndComma = re.sub(r'\b,( )*?(\n|$)', '\n', subEndings);
 	return subEndComma;
 
 def removeWhitespace(lyrics):
-	subSpaces = re.sub(r'^( )+?\b', '', lyrics, flags = re.MULTILINE);
-	subEndSpaces = re.sub(r'( )+?\n', '\n', subSpaces);
-	subMidSpaces = re.sub(r'( ){2,}', ' ', subEndSpaces);
+	subSpaces = re.sub(r'^( |\t)+?\b', '', lyrics, flags = re.MULTILINE);
+	subEndSpaces = re.sub(r'( |\t)+?(\n|$)', '\n', subSpaces);
+	subMidSpaces = re.sub(r'( |\t){2,}', ' ', subEndSpaces);
 	subNewline = re.sub(r'\n{2,}', '\n', subMidSpaces);
 	return subNewline;
+
+def removeSingleWords(lyrics):
+	subOneWordLine = re.sub(r'^\S+?(\n|$)', '', lyrics, flags = re.MULTILINE);
+	return subOneWordLine;
 
 def cleanLyrics(lyrics):
 	step1 = removeHeader(lyrics);
@@ -54,7 +60,8 @@ def cleanLyrics(lyrics):
 	step4 = removeRest(step3);
 	step5 = cleanCharacters(step4);
 	step6 = removeWhitespace(step5);
-	return step6;
+	step7 = removeSingleWords(step6);
+	return step7;
 
 def handleFrontPage(fpage, base, myFile):
 	artists = fpage.xpath("//pre/a[@href]/@href");
