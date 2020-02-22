@@ -2,7 +2,7 @@
 
 import urllib.request
 import re
-from lxml import html, etree
+from lxml import html
 
 ohhla = "http://ohhla.com/"
 sites = ["http://ohhla.com/all.html", "http://ohhla.com/all_two.html", "http://ohhla.com/all_three.html", "http://ohhla.com/all_four.html", "http://ohhla.com/all_five.html"]; 
