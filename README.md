@@ -1,10 +1,10 @@
 # OHHLA-WebScraper
 
-There are two parts to this Web Scraper. First, there is a nice and simple Web Scraper used to pull lyrics from the [Original Hip-Hop Lyrics Archive](http://ohhla.com/). Second, there is an extensive amount of sanitization and filtering of the lyrics.
+This Web Scraper will download and sanitize the top artists' lyrics from the [Original Hip-Hop Lyrics Archive](http://ohhla.com/). If you pass it the `--all` flag, it will instead download all artists lyrics, which can be quite extensive.
 
-My use of the scraper is to have a file of rap verses (hopefully with a high percentage of rhyming lines), and as such, I needed to filter out a lot of the background noise, so to say, in each song.  Feel free to tweak the scraper and tailor it for you -- you can keep the artists, song names, albums and other meta-data, chorus info, etc. depending on what suits your needs.  I wanted to make this as an easy way to just get a collection of rap verses, but if you want to add bells and whistles, it will only take a few small easy changes!
+It will write a single file per artist, but due to some sanitization decisions (mostly that these lyrics will be fed directly into other programs), it does not separate songs within the files. My use of the scraper is to have a file of rap verses (hopefully with a high percentage of rhyming lines) per artist, and as such, I needed to filter out a lot of the background noise, so to say, in each song.  Feel free to tweak the scraper and tailor it for you -- you can keep the artists, song names, albums and other meta-data, chorus info, etc. depending on what suits your needs.  I wanted to make this as an easy way to just get a collection of rap verses, but if you want to add bells and whistles, it will only take a few small easy changes!
 
-The lyrics are left out of the github repo because of the extensive size of the archive. Feel free to clone the repo and run the scraper yourself, but be warned it might take several hours to go through all the pages. The OHHLA has a pretty extensive archive and my dirty (but pretty comprehensive) approach to sanitization with a bunch of regular expressions is not too efficient (Currently around 75,000 lines of lyrics/10 mins).
+The lyrics are left out of the github repo because of the extensive size of the archive. Feel free to clone the repo and run the scraper yourself, but be warned it might take some time to go through all the pages. The OHHLA has a pretty extensive archive and my dirty (but pretty comprehensive) approach to sanitization with a bunch of regular expressions is not too efficient (Currently around 75,000 lines of lyrics/10 mins).
 
 I intend to use the lyrics with a tweaked version of my Markov Babbler in order to create a Rap Generator. As of 28 Dec. 2014, the regular expressions, used to sanitize the lyrics, need to be improved a bit before this Scraper can be fed to the Markov Model. The sanitization has currently been hand-checked against all lyrics for artist up through 2 Low (175 songs with 7500 lines of rap). I intend to hand-test the sanitization will the lyrics for all artists whose name starts with a 1 or 2. There are older entries (1200 Techniques) as well as newer entries (2 Chainz) to test the sanitization against and will have over 10,000 lines of lyrics which it is tested with. I believe this will be a solid benchmark for the rest of the lyrics in the archive.
 
@@ -14,14 +14,10 @@ Finally, this is my *first ever* program written in Python. Please don't be too 
 
 ## Using the Scraper
 
-1. Download the source code (really just the OHHLAScraper.py file).
-2. Start up your Python Command Line (V.3.2 or higher is guaranteed. Haven't tested on older versions)
-3. Execute `import OHHLAScraper`
-4. Wait several hours while it compiles a new `lyrics.txt` file for you.
-
-#### Trouble Shooting
-
-Make sure you have the [lxml](http://lxml.de/) library downloaded. The rest of the dependencies are standard in Python3.
+```
+pip install -r requirements.txt
+python OHHLAScraper.py [-o <output directory>] [--all]
+```
 
 ## Philosophy Towards Sanitization Rules
 
