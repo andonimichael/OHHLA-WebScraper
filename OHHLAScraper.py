@@ -4,6 +4,7 @@ import urllib.request
 import re
 from lxml import html
 
+from argparser import create_arg_parser
 from sanitizer import clean_lyrics
 
 ohhla = "http://ohhla.com/"
@@ -75,8 +76,8 @@ def handle_song_page(spage, myFile):
     myFile.write(cleanup)
 
 
-def scrape_OHHLA():
-    myFile = open("lyrics.txt", "w")
+def scrape_OHHLA(output_file):
+    myFile = open(output_file, "w")
     for url in sites:
         fpageOpen = urllib.request.urlopen(url)
         fpageDom = html.fromstring(fpageOpen.read())
@@ -84,4 +85,7 @@ def scrape_OHHLA():
     myFile.close()
 
 
-scrape_OHHLA()
+if __name__ == '__main__':
+    parser = create_arg_parser()
+    args = parser.parse_args()
+    scrape_OHHLA(args.output_file)
