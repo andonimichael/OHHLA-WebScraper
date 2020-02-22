@@ -2,7 +2,7 @@ import urllib.request
 import re
 
 from lxml import html
-from sanitizer import clean_lyrics
+from sanitizer import Sanitizer
 
 
 class OHHLAScraper:
@@ -17,6 +17,7 @@ class OHHLAScraper:
 
     def __init__(self, output_directory):
         self.output_directory = output_directory
+        self.sanitizer = Sanitizer()
 
     def scrape_all_artists(self):
         for url in self.ALL_ARTIST_SITES:
@@ -105,19 +106,7 @@ class OHHLAScraper:
                 next_url = self.OHHLA_URL + song_ref
                 self._scrape_top_artist_page(next_url, output_file, recurse=False)
 
-    def _is_parent_ref(self, url, ref):
-        start_of_relative_ref = len(self.OHHLA_URL) - 1
-        end_of_relative_ref = url.rindex('/', 0, len(url) - 1) + 1
-        relative_ref = url[start_of_relative_ref:end_of_relative_ref]
-        return relative_ref == ref
-
-    @staticmethod
-    def _extract_dom(url):
-        opened_url = urllib.request.urlopen(url)
-        return html.fromstring(opened_url.read())
-
-    @staticmethod
-    def _scrape_song_page(url, output_file):
+    def _scrape_song_page(self, url, output_file):
         try:
             opened_url = urllib.request.urlopen(url)
             dom = opened_url.read()
@@ -133,6 +122,17 @@ class OHHLAScraper:
         else:
             lyrics = dom.decode("utf-8", "ignore")
 
-        cleaned_lyrics = clean_lyrics(lyrics)
+        cleaned_lyrics = self.sanitizer.clean_lyrics(lyrics)
         output_file.write(cleaned_lyrics)
         output_file.write('\n')
+
+    def _is_parent_ref(self, url, ref):
+        start_of_relative_ref = len(self.OHHLA_URL) - 1
+        end_of_relative_ref = url.rindex('/', 0, len(url) - 1) + 1
+        relative_ref = url[start_of_relative_ref:end_of_relative_ref]
+        return relative_ref == ref
+
+    @staticmethod
+    def _extract_dom(url):
+        opened_url = urllib.request.urlopen(url)
+        return html.fromstring(opened_url.read())
