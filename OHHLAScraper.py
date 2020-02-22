@@ -84,7 +84,7 @@ def handleFrontPage(fpage, base, myFile):
 		handleArtistPage(ApageDom, url, href, myFile);
 
 def handleArtistPage(apage, base, nextstop, myFile):
-	albums = apage.xpath("//li/a[@href]/@href");
+	albums = apage.xpath("//tr/td/a[@href]/@href");
 	for href in albums:
 		if href == '':
 			continue
@@ -100,7 +100,7 @@ def handleArtistPage(apage, base, nextstop, myFile):
 
 def handleAlbumPage(alpage, base, stop, myFile):
 	currstop = "/" + stop;
-	songs = alpage.xpath("//li/a[@href]/@href");
+	songs = alpage.xpath("//tr/td/a[@href]/@href");
 	for href in songs:
 		if href == '':
 			continue
