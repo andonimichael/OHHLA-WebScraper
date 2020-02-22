@@ -9,8 +9,12 @@ from pathlib import Path
 from argparser import create_arg_parser
 from sanitizer import clean_lyrics
 
-ohhla = "http://ohhla.com/"
-sites = ["http://ohhla.com/all.html", "http://ohhla.com/all_two.html", "http://ohhla.com/all_three.html", "http://ohhla.com/all_four.html", "http://ohhla.com/all_five.html"];
+OHHLA_URL = "http://ohhla.com/"
+ALL_ARTIST_SITES = ["http://ohhla.com/all.html",
+                    "http://ohhla.com/all_two.html",
+                    "http://ohhla.com/all_three.html",
+                    "http://ohhla.com/all_four.html",
+                    "http://ohhla.com/all_five.html"]
 
 
 def handle_front_page(fpage, base, output_directory):
@@ -85,11 +89,11 @@ def handle_song_page(spage, output_file):
     output_file.write('\n')
 
 
-def scrape_OHHLA(output_directory):
-    for url in sites:
+def scrape_OHHLA(ohhla_sites, output_directory):
+    for url in ohhla_sites:
         fpageOpen = urllib.request.urlopen(url)
         fpageDom = html.fromstring(fpageOpen.read())
-        handle_front_page(fpageDom, ohhla, output_directory)
+        handle_front_page(fpageDom, OHHLA_URL, output_directory)
 
 
 if __name__ == '__main__':
@@ -97,4 +101,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     Path(args.output_directory).mkdir(exist_ok=True)
-    scrape_OHHLA(args.output_directory)
+    scrape_OHHLA(ALL_ARTIST_SITES, args.output_directory)
